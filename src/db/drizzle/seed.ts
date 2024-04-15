@@ -1,9 +1,10 @@
 // fetch posts from jsonplaceholder and seed the database
+import { getRandomUnsplashImage } from '../../utils/get-random';
 import { db, sqlite } from './db.client';
-import { posts } from './schema';
+import { galleries, posts } from './schema';
 
 
-const seed = async () => {
+const seedPosts = async () => {
   type JsonplaygroundPost = {
     title: string,
     body: string,
@@ -21,13 +22,38 @@ const seed = async () => {
         status: Math.random() > 0.5 ? 'published' : 'draft' as any,
       })));
 };
+const seedGalleries = async () => {
+  type Gallery = {
+    name: string,
+    image_url: string,
+  };
+  const data: Gallery[] = [
+    { image_url: getRandomUnsplashImage({ w: 400, h: 400 }), name: 'Gallery 1' },
+    { image_url: getRandomUnsplashImage({ w: 400, h: 400 }), name: 'Gallery 2' },
+    { image_url: getRandomUnsplashImage({ w: 400, h: 400 }), name: 'Gallery 3' },
+    { image_url: getRandomUnsplashImage({ w: 400, h: 400 }), name: 'Gallery 4' },
+    { image_url: getRandomUnsplashImage({ w: 400, h: 400 }), name: 'Gallery 5' },
+    { image_url: getRandomUnsplashImage({ w: 400, h: 400 }), name: 'Gallery 6' },
+    { image_url: getRandomUnsplashImage({ w: 400, h: 400 }), name: 'Gallery 7' },
+    { image_url: getRandomUnsplashImage({ w: 400, h: 400 }), name: 'Gallery 8' },
+    { image_url: getRandomUnsplashImage({ w: 400, h: 400 }), name: 'Gallery 9' },
+  ];
+
+  await db
+    .insert(galleries)
+    .values(data.map(item => ({
+      title: item.name,
+      image_url: item.image_url
+    })));
+};
 
 
 (async () => {
   try {
     console.log('Seeding database ...!');
 
-    await seed();
+    await seedPosts();
+    await seedGalleries();
     sqlite.close();
 
     console.log('Success!');

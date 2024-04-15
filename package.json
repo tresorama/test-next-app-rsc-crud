@@ -10,7 +10,8 @@
     "db:generate-migrations": "drizzle-kit generate:sqlite",
     "db:apply-migrations": "vite-node src/db/drizzle/apply-migrations.ts",
     "db:seed": "vite-node src/db/drizzle/seed.ts",
-    "db:recreate": "rm -rf src/db/drizzle/db.sqlite && npm run db:generate-migrations && npm run db:apply-migrations && npm run db:seed"
+    "db:recreate": "rm -rf src/db/drizzle/db.sqlite && npm run db:generate-migrations && npm run db:apply-migrations && npm run db:seed",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "better-sqlite3": "^9.5.0",

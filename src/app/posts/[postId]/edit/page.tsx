@@ -3,6 +3,8 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db/drizzle/db.client";
 import { posts as tablePosts } from "@/db/drizzle/schema";
 import { EditPostForm } from "../../_components/post-form";
+import { PostDeleteForm } from "../../_components/post-delete-form";
+import { PostDeleteButton } from "./_components/post-delete-button";
 
 type PageProps = {
   params: {
@@ -23,7 +25,12 @@ export default async function Page(props: PageProps) {
 
   return (
     <section className="space-y-8">
-      <p>Update Post</p>
+      <div className="flex justify-between items-center flex-wrap">
+        <p>Update Post</p>
+        <PostDeleteForm postId={post.id}>
+          <PostDeleteButton />
+        </PostDeleteForm>
+      </div>
       <EditPostForm post={post} />
     </section>
   );

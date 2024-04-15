@@ -1,6 +1,8 @@
 import { db } from "@/db/drizzle/db.client";
 import { posts as tablePosts, Post_Select } from "@/db/drizzle/schema";
 import Link from "next/link";
+import { PostDeleteForm } from "./_components/post-delete-form";
+import { PostListDeletePostButton } from "./_components/post-list-delete-button";
 
 export default async function Page() {
   const posts = await db.select().from(tablePosts);
@@ -40,6 +42,9 @@ const PostList = ({ posts }: { posts: Post_Select[]; }) => (
         <div className="space-x-4 [&_a]:underline">
           <Link href={`/posts/${post.id}/view`}>View</Link>
           <Link href={`/posts/${post.id}/edit`}>Edit</Link>
+          <PostDeleteForm postId={post.id}>
+            <PostListDeletePostButton />
+          </PostDeleteForm>
         </div>
       </div>
     ))}

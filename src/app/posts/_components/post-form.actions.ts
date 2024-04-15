@@ -4,6 +4,7 @@ import { db } from "@/db/drizzle/db.client";
 import { posts } from "@/db/drizzle/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 
 // utils
@@ -52,17 +53,14 @@ export const createPost = async (
     };
   }
 
+  let createdPostId: number;
   try {
     // create post in database
-    await db
-      .insert(posts)
-      .values(validatedData.data);
-
-    // revalidate path
-    revalidatePath("/posts");
+    const createdPost = (await db.insert(posts).values(validatedData.data).returning())[0];
+    createdPostId = createdPost.id;
 
     // return form state
-    return { status: 'success', generalSuccessMessage: "Post created successfully!" };
+    // return { status: 'success', generalSuccessMessage: "Post created successfully!" };
 
   } catch (error) {
     console.error({ what: "createPost - Server Action", error });
@@ -70,6 +68,12 @@ export const createPost = async (
     // return form state
     return { status: 'error', generalErrorMessage: "Server error while creating post!" };
   };
+
+  // if success
+  // revalidate path
+  revalidatePath("/posts");
+  redirect(`/posts/${createdPostId}/view`); // Navigate to the new post page
+
 };
 
 
