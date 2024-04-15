@@ -7,103 +7,121 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 // utils
-const FAKE_DELAY = 200;
+const FAKE_DELAY = 2000;
 const sleep = (timeInMs: number) => new Promise(res => setTimeout(res, timeInMs));
 
-
+type FormActionState = {
+  status: 'idle',
+} | {
+  status: 'success',
+  generalSuccessMessage: string,
+} | {
+  status: 'error',
+  generalErrorMessage: string,
+  formFieldsErrors?: {
+    title?: string[];
+    status?: string[];
+    content?: string[];
+  };
+};
 export const createPost = async (
-  prevState: {
-    errors?: {
-      title?: string[];
-      status?: string[];
-      content?: string[];
-    };
-  },
+  prevState: FormActionState,
   formData: FormData
-) => {
+): Promise<FormActionState> => {
 
+  // simulate slow request
   await sleep(FAKE_DELAY);
 
   // parse data from form
-  const title = formData.get("title") as string;
-  const status = formData.get("status") as string;
-  const content = formData.get("content") as string;
-  console.log({ what: "createPost - Server Action", formValues: { title, status, content } });
-
-
-  // validate data
   const validatedData = z.object({
     title: z.string().min(3),
     status: z.enum(["published", "draft"]),
     content: z.string().min(3),
   }).safeParse({
-    title,
-    status,
-    content,
+    title: formData.get("title"),
+    status: formData.get("status"),
+    content: formData.get("content"),
   });
+
+  // validate data
   if (!validatedData.success) {
     return {
-      errors: validatedData.error.flatten().fieldErrors
+      status: 'error',
+      generalErrorMessage: "Some fields are invalid! Please check the form and try again.",
+      formFieldsErrors: validatedData.error.flatten().fieldErrors,
     };
   }
 
-  // create post in database
-  await db
-    .insert(posts)
-    .values(validatedData.data);
+  try {
+    // create post in database
+    await db
+      .insert(posts)
+      .values(validatedData.data);
 
-  // revalidate path
-  revalidatePath("/posts");
-  return {
+    // revalidate path
+    revalidatePath("/posts");
+
+    // return form state
+    return { status: 'success', generalSuccessMessage: "Post created successfully!" };
+
+  } catch (error) {
+    console.error({ what: "createPost - Server Action", error });
+
+    // return form state
+    return { status: 'error', generalErrorMessage: "Server error while creating post!" };
   };
 };
 
-export const updatePost = async (
-  prevState: {
-    errors?: {
-      title?: string[];
-      status?: string[];
-      content?: string[];
-    };
-  },
-  formData: FormData
-) => {
 
+export const updatePost = async (
+  prevState: FormActionState,
+  formData: FormData
+): Promise<FormActionState> => {
+
+  // simulate slow request
   await sleep(FAKE_DELAY);
+
 
   // parse data from form
   const id = formData.get("id") as string;
-  const title = formData.get("title") as string;
-  const status = formData.get("status") as string;
-  const content = formData.get("content") as string;
-  console.log({ what: "updatePost - Server Action", formValues: { id, title, status, content } });
 
-
-  // validate data
   const validatedData = z.object({
     title: z.string().min(3),
     status: z.enum(["published", "draft"]),
     content: z.string().min(3),
   }).safeParse({
-    title,
-    status,
-    content,
+    title: formData.get("title"),
+    status: formData.get("status"),
+    content: formData.get("content"),
   });
+
+  // validate data
   if (!validatedData.success) {
     return {
-      errors: validatedData.error.flatten().fieldErrors
+      status: 'error',
+      generalErrorMessage: "Some fields are invalid! Please check the form and try again.",
+      formFieldsErrors: validatedData.error.flatten().fieldErrors,
     };
   }
 
-  // update post in database
-  await db
-    .update(posts)
-    .set(validatedData.data)
-    .where(eq(posts.id, Number(id)));
+  try {
+    // update post in database
+    await db
+      .update(posts)
+      .set(validatedData.data)
+      .where(eq(posts.id, Number(id)));
 
-  // revalidate path
-  revalidatePath("/posts");
-  revalidatePath(`/posts/${id}`);
+    // revalidate path
+    revalidatePath("/posts");
+    revalidatePath(`/posts/${id}`);
 
-  return {};
+    // return form state
+    return { status: 'success', generalSuccessMessage: "Post updated successfully!" };
+
+  } catch (error) {
+    console.error({ what: "updatePost - Server Action", error });
+
+    // return form state
+    return { status: 'error', generalErrorMessage: "Server error while updating post!" };
+  };
 };

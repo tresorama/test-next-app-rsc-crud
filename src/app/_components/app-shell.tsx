@@ -11,7 +11,7 @@ export const AppShell = ({ children }: Readonly<{ children: React.ReactNode; }>)
       <aside className="p-4 border">
         <NavLinks />
       </aside>
-      <main className="flex-grow p-4 border">
+      <main className="min-w-0 flex-grow p-4 border">
         {children}
       </main>
     </div>
